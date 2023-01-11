@@ -34,12 +34,12 @@ namespace AuthFunctions
 
         [FunctionName("RegisterFunction")]
         [OpenApiOperation(operationId: "Run", tags: new[] { "Register" })]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "X-Code", In = OpenApiSecurityLocationType.Header)]
+        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(RegisterDto), Description = "Parameters", Required = true)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.Created, contentType: "application/json", bodyType: typeof(RegisterResponseDto), Description = "The Created response")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(RegisterResponseDto), Description = "The Bad Request response")]
-        public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req)
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.Conflict, contentType: "application/json", bodyType: typeof(RegisterResponseDto), Description = "The Already Exists response")]
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req)
         {
             _logger.LogInformation($"C# HTTP trigger function {nameof(RegisterFunction)} processed a request.");
 
@@ -50,6 +50,7 @@ namespace AuthFunctions
             if (!validationResult.IsValid)
             {
                 var errorResponse = new RegisterResponseDto { Errors = validationResult.Errors.Select(s => new ErrorResponseDto { Message = s.ErrorMessage }).ToList() };
+                _logger.LogError($"{nameof(RegisterFunction)}: Validation error: {JsonConvert.SerializeObject(errorResponse)}");
                 return new BadRequestObjectResult(errorResponse);
             }
 
@@ -61,6 +62,7 @@ namespace AuthFunctions
             if (existingUser != null)
             {
                 var errorResponse = new RegisterResponseDto { Errors = new List<ErrorResponseDto> { new ErrorResponseDto { Message = $"The {nameof(dto.UserName)} or {nameof(dto.Email)} already exists." } } };
+                _logger.LogError($"{nameof(RegisterFunction)}: Already exists.");
                 return new ConflictObjectResult(errorResponse);
             }
 
@@ -83,6 +85,7 @@ namespace AuthFunctions
             await _unitOfWork.CompleteAsync();
 
             var response = new RegisterResponseDto { Message = "The user is created." };
+            _logger.LogInformation($"The user {dto.UserName}, with email {dto.Email} is created.");
 
             return new CreatedResult("", response);
         }
