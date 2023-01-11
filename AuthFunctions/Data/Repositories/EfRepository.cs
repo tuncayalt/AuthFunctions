@@ -28,7 +28,7 @@ namespace AuthFunctions.Data.Repositories
             await _dbContext.AddAsync(entity);
         }
 
-        public async Task<TEntity?> GetAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null)
+        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null)
         {
             if (predicate == null)
             {
@@ -44,7 +44,7 @@ namespace AuthFunctions.Data.Repositories
             return await query.Where(predicate).FirstOrDefaultAsync();
         }
 
-        public async Task<IList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null)
+        public async Task<IList<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null)
         {
             if (predicate == null)
             {
