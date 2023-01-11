@@ -62,7 +62,7 @@ namespace AuthFunctions
             if (existingUser != null)
             {
                 var errorResponse = new RegisterResponseDto { Errors = new List<ErrorResponseDto> { new ErrorResponseDto { Message = $"The {nameof(dto.UserName)} or {nameof(dto.Email)} already exists." } } };
-                _logger.LogError($"{nameof(RegisterFunction)}: Already exists.");
+                _logger.LogError($"{nameof(RegisterFunction)}: The user {dto.UserName}, or email {dto.Email} already exists.");
                 return new ConflictObjectResult(errorResponse);
             }
 
@@ -85,7 +85,7 @@ namespace AuthFunctions
             await _unitOfWork.CompleteAsync();
 
             var response = new RegisterResponseDto { Message = "The user is created." };
-            _logger.LogInformation($"The user {dto.UserName}, with email {dto.Email} is created.");
+            _logger.LogInformation($"{nameof(RegisterFunction)}: The user {dto.UserName}, with email {dto.Email} is created.");
 
             return new CreatedResult("", response);
         }
